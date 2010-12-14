@@ -159,7 +159,7 @@ function kerb_auth_hook($userinfo, $level, $remember)
 }
 
 // Registration blocking hook
-if ( getConfig('kerb_disable_local_auth', 0) == 1 )
+if ( getConfig('kerb_disable_local_auth', 0) == 1 && getConfig('kerb_enable', 0) == 1 )
 {
   $plugins->attachHook('ucp_register_validate', 'kerb_auth_reg_block($error);');
 }
@@ -175,7 +175,7 @@ function kerb_auth_reg_block(&$error)
 
 $plugins->attachHook('session_started', 'kerb_session_hook();');
 
-if ( getConfig('kerb_disable_local_auth', 0) == 1 )
+if ( getConfig('kerb_disable_local_auth', 0) == 1 && getConfig('kerb_enable', 0) == 1 )
 {
   $plugins->attachHook('common_post', 'kerb_tou_hook();');
 }
@@ -188,7 +188,7 @@ function kerb_session_hook()
   $paths->addAdminNode('adm_cat_security', 'Kerberos Authentication', 'KerberosConfig');
   
   // Disable password change
-  if ( getConfig('kerb_disable_local_auth', 0) == 1 && $session->user_level < USER_LEVEL_ADMIN )
+  if ( getConfig('kerb_disable_local_auth', 0) == 1 && getConfig('kerb_enable', 0) == 1 && $session->user_level < USER_LEVEL_ADMIN )
   {
     $link_text = getConfig('kerb_password_text', false);
     if ( empty($link_text) )
@@ -276,9 +276,11 @@ function page_Admin_KerberosConfig()
 
   require_once(ENANO_ROOT . '/plugins/kerbauth/libkrb5.php');
   
+  $can_enable = function_exists('kadm5_init_with_password');
+  
   if ( isset($_POST['submit']) )
   {
-    setConfig('kerb_enable', isset($_POST['kerb_enable']) ? '1' : '0');
+    setConfig('kerb_enable', isset($_POST['kerb_enable']) && $can_enable ? '1' : '0');
     setConfig('kerb_realm', $_POST['kerb_realm']);
     setConfig('kerb_admin_server', $_POST['kerb_admin_server']);
     setConfig('kerb_disable_local_auth', isset($_POST['kerb_disable_local_auth']) ? '1' : '0');
@@ -304,10 +306,14 @@ function page_Admin_KerberosConfig()
       <tr>
         <td class="row2" style="width: 50%;">
           Enable Kerberos authentication:
+          <?php
+          if ( !$can_enable )
+          	  echo '<br /><small>Please install the kadm5 PHP extension to enable Kerberos authentication.</small>';
+          ?>
         </td>
         <td class="row1" style="width: 50%;">
           <label>
-            <input type="checkbox" name="kerb_enable" <?php if ( getConfig('kerb_enable', 0) ) echo 'checked="checked" '; ?>/>
+            <input type="checkbox" name="kerb_enable" <?php if ( getConfig('kerb_enable', 0) && $can_enable ) echo 'checked="checked" '; if ( !$can_enable ) echo 'disabled="disabled" '; ?>/>
             Enabled
           </label>
         </td>
