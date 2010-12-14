@@ -1,13 +1,33 @@
+diff -Naur kadm5-0.2.3/config.m4 kadm5-0.2.3~patched/config.m4
+--- kadm5-0.2.3/config.m4	2003-05-09 10:28:45.000000000 -0400
++++ kadm5-0.2.3~patched/config.m4	2010-12-13 20:47:12.369457242 -0500
+@@ -43,6 +43,7 @@
+   # --with-kadm5 -> add include path
+   PHP_ADD_INCLUDE($KADM5_DIR)
+   PHP_ADD_INCLUDE($KADM5_DIR/krb5)
++  PHP_ADD_INCLUDE($KADM5_DIR/et)
+ 
+   # --with-kadm5 -> chech for lib and symbol presence
+   LIBNAME=kadm5srv # you may want to change this
+@@ -59,7 +60,7 @@
+   PHP_ADD_LIBRARY_WITH_PATH(gssrpc, /usr/lib, KADM5_SHARED_LIBADD)
+   PHP_ADD_LIBRARY_WITH_PATH(krb5, /usr/lib, KADM5_SHARED_LIBADD)
+   PHP_ADD_LIBRARY_WITH_PATH(k5crypto, /usr/lib, KADM5_SHARED_LIBADD)
+-  PHP_ADD_LIBRARY_WITH_PATH(dyn, /usr/lib, KADM5_SHARED_LIBADD)
++  dnl PHP_ADD_LIBRARY_WITH_PATH(dyn, /usr/lib, KADM5_SHARED_LIBADD)
+ 
+   PHP_EXTENSION(kadm5, $ext_shared)
+ fi
 diff -Naur kadm5-0.2.3/kadm5.c kadm5-0.2.3~patched/kadm5.c
 --- kadm5-0.2.3/kadm5.c	2003-05-28 06:51:42.000000000 -0400
-+++ kadm5-0.2.3~patched/kadm5.c	2010-12-13 16:22:00.700497383 -0500
++++ kadm5-0.2.3~patched/kadm5.c	2010-12-13 20:39:23.154629086 -0500
 @@ -29,7 +29,8 @@
  #include "config.h"
  #endif
  
 -#include "kadm5/admin.h"
-+#include "/opt/mit-krb5/include/kadm5/admin.h"
-+#include "/opt/mit-krb5/include/kadm5/kadm_err.h"
++#include <kadm5/admin.h>
++#include <kadm5/kadm_err.h>
  
  #include "php.h"
  #include "php_ini.h"
