@@ -1,0 +1,61 @@
+diff -Naur kadm5-0.2.3/kadm5.c kadm5-0.2.3~patched/kadm5.c
+--- kadm5-0.2.3/kadm5.c	2003-05-28 06:51:42.000000000 -0400
++++ kadm5-0.2.3~patched/kadm5.c	2010-12-13 16:22:00.700497383 -0500
+@@ -29,7 +29,8 @@
+ #include "config.h"
+ #endif
+ 
+-#include "kadm5/admin.h"
++#include "/opt/mit-krb5/include/kadm5/admin.h"
++#include "/opt/mit-krb5/include/kadm5/kadm_err.h"
+ 
+ #include "php.h"
+ #include "php_ini.h"
+@@ -74,7 +75,7 @@
+  *
+  * Every user visible function must have an entry in kadm5_functions[].
+  */
+-function_entry kadm5_functions[] = {
++zend_function_entry kadm5_functions[] = {
+ 	PHP_FE(kadm5_init_with_password, NULL)
+ 	PHP_FE(kadm5_destroy, NULL)
+ 	PHP_FE(kadm5_flush, NULL)
+@@ -436,6 +437,7 @@
+ 		php_error(E_WARNING, "Multiple values for single or folded enctype. (KADM5_SETKEY_DUP_ENCTYPES)");
+ 		break;
+ 	default:
++		break;
+ 	}
+ }
+ /* }}} */
+@@ -465,12 +467,29 @@
+ 	params.admin_server = admin_server;
+ 	params.mask |= KADM5_CONFIG_ADMIN_SERVER;
+ 
+-	rc = kadm5_init_with_password(princstr,
++/* prototype:
++kadm5_ret_t    kadm5_init_with_password(krb5_context context,
++                                        char *client_name,
++                                        char *pass,
++                                        char *service_name,
++                                        kadm5_config_params *params,
++                                        krb5_ui_4 struct_version,
++                                        krb5_ui_4 api_version,
++                                        char **db_args,
++                                        void **server_handle);
++*/
++
++	krb5_context context;
++	krb5_init_context(&context);
++	char **db_args = NULL;
++	rc = kadm5_init_with_password(context,
++								  princstr,
+ 								  password,
+ 								  KADM5_ADMIN_SERVICE,
+ 								  &params,
+ 								  KADM5_STRUCT_VERSION,
+ 								  KADM5_API_VERSION_2,
++								  db_args,
+ 								  &handle);
+ 
+ 	if (rc) {
